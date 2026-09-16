@@ -71,7 +71,7 @@ export function GameScreen({ config, roundIndex, foundIds, onFound, onAdvance, o
 
       <header className="game-header">
         <div>
-          <div className="eyebrow">틀린 그림 찾기 · {roundIndex + 1}/{config.rounds.length}</div>
+          <div className="eyebrow">다른 그림 찾기 · {roundIndex + 1}/{config.rounds.length}</div>
           <h1>두 그림에서 달라진 곳을 찾아보세요!</h1>
         </div>
         <div className="progress" aria-label={`${foundIds.size}개 찾음, 전체 ${totalAnswers}개`}>
