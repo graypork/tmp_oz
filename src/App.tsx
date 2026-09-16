@@ -11,6 +11,7 @@ function GameApp() {
   const [config] = useState(loadGameConfig);
   const [stage, setStage] = useState<AppStage>('start');
   const [roundIndex, setRoundIndex] = useState(0);
+  const [timerSeconds, setTimerSeconds] = useState(config.timerSeconds);
   const [foundByRound, setFoundByRound] = useState(() => createFoundState(config.rounds.length));
 
   function startGame() {
@@ -46,7 +47,14 @@ function GameApp() {
   }
 
   if (stage === 'timer') {
-    return <TimerScreen seconds={config.timerSeconds} onBack={handleTimerBack} />;
+    return (
+      <TimerScreen
+        seconds={timerSeconds}
+        defaultSeconds={config.timerSeconds}
+        onSecondsChange={setTimerSeconds}
+        onBack={handleTimerBack}
+      />
+    );
   }
 
   const round = config.rounds[roundIndex];

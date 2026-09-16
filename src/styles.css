@@ -280,3 +280,32 @@ p { color: #625f56; }
   .game-header h1 { font-size: clamp(26px, 2.6vw, 40px); }
   .painting-pane h2 { margin-bottom: 6px; }
 }
+
+.timer-adjust-controls {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  align-items: center;
+  margin: -8px 0 12px;
+}
+.timer-adjust-button {
+  min-width: 128px;
+  font-size: 22px;
+  padding: 14px 22px;
+}
+.timer-adjust-button:disabled,
+.timer-reset-default:disabled {
+  opacity: .4;
+  cursor: default;
+}
+.timer-reset-default {
+  border: 0;
+  background: transparent;
+  color: #675d49;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
