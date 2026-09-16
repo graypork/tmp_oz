@@ -1,5 +1,26 @@
 let audioContext: AudioContext | null = null;
 
+export const COUNTDOWN_BEEP_VOLUME = 0.15;
+export const TIME_UP_BEEP_VOLUME = 0.1625;
+
+const TIME_UP_GROUPS = 5;
+const TIME_UP_BEEPS_PER_GROUP = 5;
+const TIME_UP_BEEP_SPACING_SECONDS = 0.09;
+const TIME_UP_GROUP_SPACING_SECONDS = 0.72;
+
+export function createTimeUpBeepSchedule(): number[] {
+  const schedule: number[] = [];
+
+  for (let group = 0; group < TIME_UP_GROUPS; group += 1) {
+    const groupStart = group * TIME_UP_GROUP_SPACING_SECONDS;
+    for (let beep = 0; beep < TIME_UP_BEEPS_PER_GROUP; beep += 1) {
+      schedule.push(groupStart + beep * TIME_UP_BEEP_SPACING_SECONDS);
+    }
+  }
+
+  return schedule;
+}
+
 function getAudioContext(): AudioContext | null {
   try {
     if (!audioContext) audioContext = new AudioContext();
@@ -48,14 +69,14 @@ export function playCountdownBeep(): void {
   const context = getAudioContext();
   if (!context) return;
 
-  tone(context, 880, 0, 0.1, 0.12, 'square');
+  tone(context, 880, 0, 0.1, COUNTDOWN_BEEP_VOLUME, 'square');
 }
 
 export function playTimeUpSound(): void {
   const context = getAudioContext();
   if (!context) return;
 
-  for (let index = 0; index < 8; index += 1) {
-    tone(context, 988, index * 0.11, 0.075, 0.13, 'square');
+  for (const startsIn of createTimeUpBeepSchedule()) {
+    tone(context, 988, startsIn, 0.065, TIME_UP_BEEP_VOLUME, 'square');
   }
 }
