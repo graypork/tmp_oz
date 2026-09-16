@@ -16,3 +16,7 @@ export function clampTimerSeconds(seconds: number): number {
 export function adjustTimerSeconds(seconds: number, deltaSeconds: number): number {
   return clampTimerSeconds(seconds + deltaSeconds);
 }
+
+export function isCountdownWarningSecond(seconds: number): boolean {
+  return Number.isInteger(seconds) && seconds >= 1 && seconds <= 10;
+}

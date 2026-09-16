@@ -44,11 +44,18 @@ export function playCorrectSound(): void {
   tone(context, 783.99, 0.23, 0.34, 0.13, 'triangle');
 }
 
+export function playCountdownBeep(): void {
+  const context = getAudioContext();
+  if (!context) return;
+
+  tone(context, 880, 0, 0.1, 0.12, 'square');
+}
+
 export function playTimeUpSound(): void {
   const context = getAudioContext();
   if (!context) return;
 
-  tone(context, 783.99, 0, 0.38, 0.12, 'triangle');
-  tone(context, 659.25, 0.2, 0.42, 0.11, 'sine');
-  tone(context, 523.25, 0.42, 0.62, 0.13, 'sine');
+  for (let index = 0; index < 8; index += 1) {
+    tone(context, 988, index * 0.11, 0.075, 0.13, 'square');
+  }
 }

@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { playTimeUpSound } from '../game/audio';
+import { playCountdownBeep, playTimeUpSound } from '../game/audio';
 import {
   MAX_TIMER_SECONDS,
   MIN_TIMER_SECONDS,
   TIMER_STEP_SECONDS,
   adjustTimerSeconds,
   formatSeconds,
+  isCountdownWarningSecond,
 } from '../game/time';
 
 type Props = {
@@ -20,6 +21,7 @@ export function TimerScreen({ seconds, defaultSeconds, onSecondsChange, onBack }
   const [phase, setPhase] = useState<'ready' | 'running' | 'finished'>('ready');
   const endAtRef = useRef(0);
   const finishedRef = useRef(false);
+  const lastWarningSecondRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (phase === 'ready') setRemaining(seconds);
@@ -39,6 +41,12 @@ export function TimerScreen({ seconds, defaultSeconds, onSecondsChange, onBack }
     const tick = () => {
       const next = Math.max(0, Math.ceil((endAtRef.current - Date.now()) / 1000));
       setRemaining(next);
+
+      if (isCountdownWarningSecond(next) && lastWarningSecondRef.current !== next) {
+        lastWarningSecondRef.current = next;
+        playCountdownBeep();
+      }
+
       if (next === 0) finishTimer();
     };
 
@@ -49,6 +57,7 @@ export function TimerScreen({ seconds, defaultSeconds, onSecondsChange, onBack }
 
   function startTimer() {
     finishedRef.current = false;
+    lastWarningSecondRef.current = null;
     setRemaining(seconds);
     endAtRef.current = Date.now() + seconds * 1000;
     setPhase('running');
@@ -56,6 +65,7 @@ export function TimerScreen({ seconds, defaultSeconds, onSecondsChange, onBack }
 
   function resetTimer() {
     finishedRef.current = false;
+    lastWarningSecondRef.current = null;
     setRemaining(seconds);
     setPhase('ready');
   }

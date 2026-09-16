@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { adjustTimerSeconds, clampTimerSeconds, formatSeconds } from '../src/game/time.ts';
+import { adjustTimerSeconds, clampTimerSeconds, formatSeconds, isCountdownWarningSecond } from '../src/game/time.ts';
 
 test('formats three minutes', () => assert.equal(formatSeconds(180), '3:00'));
 test('formats two minutes', () => assert.equal(formatSeconds(120), '2:00'));
@@ -24,4 +24,13 @@ test('does not go below 30 seconds', () => {
 test('does not go above 10 minutes', () => {
   assert.equal(adjustTimerSeconds(600, 30), 600);
   assert.equal(clampTimerSeconds(999), 600);
+});
+
+
+test('countdown warning beeps only from 10 through 1 seconds', () => {
+  assert.equal(isCountdownWarningSecond(11), false);
+  assert.equal(isCountdownWarningSecond(10), true);
+  assert.equal(isCountdownWarningSecond(5), true);
+  assert.equal(isCountdownWarningSecond(1), true);
+  assert.equal(isCountdownWarningSecond(0), false);
 });
