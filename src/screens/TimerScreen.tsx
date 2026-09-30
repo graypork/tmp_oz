@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { playCountdownBeep, playTimeUpSound } from '../game/audio';
 import {
+  TIMER_MUSIC_NORMAL_VOLUME,
+  TIMER_MUSIC_PATH,
+  getTimerMusicVolume,
+  shouldLoopTimerMusic,
+} from '../game/timerMusic';
+import {
   MAX_TIMER_SECONDS,
   MIN_TIMER_SECONDS,
   TIMER_STEP_SECONDS,
@@ -22,14 +28,67 @@ export function TimerScreen({ seconds, defaultSeconds, onSecondsChange, onBack }
   const endAtRef = useRef(0);
   const finishedRef = useRef(false);
   const lastWarningSecondRef = useRef<number | null>(null);
+  const timerMusicRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     if (phase === 'ready') setRemaining(seconds);
   }, [seconds, phase]);
 
+
+  function getTimerMusic(): HTMLAudioElement {
+    if (!timerMusicRef.current) {
+      const audio = new Audio(TIMER_MUSIC_PATH);
+      audio.preload = 'auto';
+      audio.volume = TIMER_MUSIC_NORMAL_VOLUME;
+      timerMusicRef.current = audio;
+    }
+    return timerMusicRef.current;
+  }
+
+  function stopTimerMusic() {
+    const audio = timerMusicRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+    audio.volume = TIMER_MUSIC_NORMAL_VOLUME;
+  }
+
+  function startTimerMusic(selectedSeconds: number) {
+    const audio = getTimerMusic();
+    audio.pause();
+    audio.currentTime = 0;
+    audio.volume = TIMER_MUSIC_NORMAL_VOLUME;
+
+    const updateLoopMode = () => {
+      if (Number.isFinite(audio.duration) && audio.duration > 0) {
+        audio.loop = shouldLoopTimerMusic(selectedSeconds, audio.duration);
+      }
+    };
+
+    if (Number.isFinite(audio.duration) && audio.duration > 0) {
+      updateLoopMode();
+    } else {
+      audio.loop = true;
+      audio.onloadedmetadata = updateLoopMode;
+    }
+
+    void audio.play().catch(() => {
+      // Browser audio permission failures should not block the timer itself.
+    });
+  }
+
+  useEffect(() => {
+    if (phase === 'running' && timerMusicRef.current) {
+      timerMusicRef.current.volume = getTimerMusicVolume(remaining);
+    }
+  }, [phase, remaining]);
+
+  useEffect(() => () => stopTimerMusic(), []);
+
   function finishTimer() {
     if (finishedRef.current) return;
     finishedRef.current = true;
+    stopTimerMusic();
     setRemaining(0);
     setPhase('finished');
     playTimeUpSound();
@@ -60,14 +119,21 @@ export function TimerScreen({ seconds, defaultSeconds, onSecondsChange, onBack }
     lastWarningSecondRef.current = null;
     setRemaining(seconds);
     endAtRef.current = Date.now() + seconds * 1000;
+    startTimerMusic(seconds);
     setPhase('running');
   }
 
   function resetTimer() {
     finishedRef.current = false;
     lastWarningSecondRef.current = null;
+    stopTimerMusic();
     setRemaining(seconds);
     setPhase('ready');
+  }
+
+  function handleBack() {
+    stopTimerMusic();
+    onBack();
   }
 
   function adjust(delta: number) {
@@ -80,7 +146,7 @@ export function TimerScreen({ seconds, defaultSeconds, onSecondsChange, onBack }
 
   return (
     <main className="timer-screen">
-      <button className="secondary-button timer-back" onClick={onBack}>← 이전으로</button>
+      <button className="secondary-button timer-back" onClick={handleBack}>← 이전으로</button>
 
       {phase === 'ready' && (
         <>
